@@ -5,10 +5,12 @@ const db = require('../data/dbConfig.js')
 
 const router = express.Router()
 
+db.on('query', (data) => {
+    console.log(data)
+})
+
 router.get('/', async (req, res) => {
     try{
-        const sql = await db('accounts').toString()
-        console.log(sql)
         const accounts = await db('accounts')
         console.log(accounts)
         res.status(200).json(accounts)
@@ -59,13 +61,10 @@ router.put('/:id', async (req, res) => {
     const changes = req.body
 
     try {
-        const sql = await db('accounts').update(changes).where('id', id).toString()
-        console.log(sql)
-        const [account] = await db.select('*').from('accounts').where('id', id)
-        if (account) {
-            db('accounts').update(changes).where('id', id)
+        const count = await db('accounts').update(changes).where({id})
+        if (count) {
             res.status(200).json({
-                updated: account, changes: changes
+                update: count
             })
         } else {
             res.status(404).json({
